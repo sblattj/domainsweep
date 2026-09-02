@@ -1,0 +1,66 @@
+{
+  "name": "domainsweep",
+  "version": "0.1.0",
+  "description": "Find free domain names: checks a name and its lookalike variants across TLDs in your priority order (RDAP, WHOIS, DNS; no API key).",
+  "type": "module",
+  "license": "MIT",
+  "author": {
+    "name": "Stephen Blatt",
+    "url": "https://github.com/sblattj"
+  },
+  "homepage": "https://github.com/sblattj/domainsweep",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sblattj/domainsweep.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sblattj/domainsweep/issues"
+  },
+  "keywords": [
+    "domain",
+    "domain-name",
+    "availability",
+    "rdap",
+    "whois",
+    "tld",
+    "cli",
+    "brand-name",
+    "name-generator"
+  ],
+  "bin": {
+    "domainsweep": "dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE",
+    ".env.example"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "start": "bun run src/cli.ts",
+    "build": "bun run scripts/build.ts",
+    "test": "bun test",
+    "test:live": "DOMAINSWEEP_LIVE=1 bun test test/live.test.ts",
+    "test:node": "bun run build && node dist/cli.js --help >/dev/null && node -e \"import('./dist/index.js').then(m=>{if(!m.hunt)process.exit(1)})\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "prepublishOnly": "bun run build && bun test"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5"
+  }
+}
