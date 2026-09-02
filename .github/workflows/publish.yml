@@ -1,0 +1,70 @@
+# Publish to npm on a v* tag, using OIDC trusted publishing (no NPM_TOKEN).
+#
+# Prerequisites, in order:
+#   1. A trusted publisher can only be registered on a package that ALREADY
+#      EXISTS on npm. So the FIRST publish is manual, from a logged-in
+#      terminal:  npm publish --access public
+#   2. Then register the trusted publisher at npmjs.com -> the package ->
+#      Settings -> Trusted Publisher: owner `sblattj`, repository
+#      `domainsweep`, workflow filename `publish.yml`.
+#   3. `--provenance` requires the GitHub repository to be PUBLIC.
+name: Publish
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      # Trusted publishing needs npm >= 11.5.1.
+      - run: npm i -g npm@latest
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - run: bun test
+
+      - name: Guard (tag matches version; skip if already published)
+        id: guard
+        run: |
+          set -euo pipefail
+          PKG=$(node -p "require('./package.json').name")
+          VER=$(node -p "require('./package.json').version")
+          echo "pkg=$PKG version=$VER tag=$GITHUB_REF_NAME"
+          if [ "$GITHUB_REF_NAME" != "v$VER" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match package.json version $VER (expected v$VER)"
+            exit 1
+          fi
+          if npm view "$PKG@$VER" version >/dev/null 2>&1; then
+            echo "$PKG@$VER is already on npm; skipping publish"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish
+        id: publish
+        if: steps.guard.outputs.skip != 'true'
+        run: npm publish --provenance --access public
+
+      - name: GitHub release
+        # Only after a successful publish, or when the version was already on npm.
+        if: steps.guard.outputs.skip == 'true' || steps.publish.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 \
+            || gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes
