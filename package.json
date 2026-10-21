@@ -1,6 +1,6 @@
 {
   "name": "domainsweep",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Find free domain names: checks a name and its lookalike variants across TLDs in your priority order (RDAP, WHOIS, DNS; no API key).",
   "type": "module",
   "license": "MIT",
