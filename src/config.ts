@@ -44,6 +44,7 @@ export const DEFAULTS = {
   limit: 80,
   concurrency: 6,
   timeoutMs: 8000,
+  resultTtlMs: 0,
 } as const;
 
 const KNOWN_VARIANTS: readonly VariantStrategy[] = ["spelling", "leet", "affix", "vowel"];
@@ -180,5 +181,6 @@ export function loadConfig(opts?: {
     concurrency: intOr(get("DOMAIN_CONCURRENCY"), DEFAULTS.concurrency),
     timeoutMs: intOr(get("DOMAIN_TIMEOUT_MS"), DEFAULTS.timeoutMs),
     cacheDir: get("DOMAIN_CACHE_DIR") ?? path.join(home, ".cache", "domainsweep"),
+    resultTtlMs: intOr(get("DOMAIN_RESULT_TTL_MS"), DEFAULTS.resultTtlMs),
   };
 }

@@ -209,7 +209,11 @@ async function main(rawArgv: string[]): Promise<number> {
       continue;
     }
 
-    const checker = createChecker({ timeoutMs: cfg.timeoutMs, cacheDir: cfg.cacheDir });
+    const checker = createChecker({
+      timeoutMs: cfg.timeoutMs,
+      cacheDir: cfg.cacheDir,
+      results: cfg.resultTtlMs > 0 ? { ttlMs: cfg.resultTtlMs } : undefined,
+    });
     await checkAll(candidates, checker, {
       concurrency: cfg.concurrency,
       stopAfterAvailable,
@@ -228,6 +232,7 @@ async function main(rawArgv: string[]): Promise<number> {
               status: r.status,
               method: r.method,
               detail: r.detail,
+              ...(r.cached ? { cached: true } : {}),
               ms: r.ms,
             })}\n`,
           );

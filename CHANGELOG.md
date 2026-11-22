@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-22
+
+### Added
+
+- Optional result cache. `DOMAIN_RESULT_TTL_MS` (default `0`, off) stores each
+  finished `available`/`taken` answer under `DOMAIN_CACHE_DIR/results/` and
+  serves it until it expires; `unknown` is never stored. `--json` marks served
+  lines `"cached": true`.
+- Library: `createChecker` takes `results: { ttlMs, mode?: "use" | "refresh" | "only" }`
+  and an injectable `lookup`; `Config` gains `resultTtlMs`, `CheckResult` gains
+  `cached?`, and `CheckMethod` gains `"cache"` (a miss in `only` mode).
+
 ## [0.1.1] - 2026-10-21
 
 ### Changed

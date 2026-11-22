@@ -117,11 +117,16 @@ is unset. `Ctrl-C` prints the summary so far and exits 130.
 | `DOMAIN_CONCURRENCY` | `6` |
 | `DOMAIN_TIMEOUT_MS` | `8000` |
 | `DOMAIN_CACHE_DIR` | `~/.cache/domainsweep` |
+| `DOMAIN_RESULT_TTL_MS` | `0` (off) |
 
 `DOMAIN_SORT_KEY` accepts brackets or none, commas or spaces, leading dots or
 none: `[com, ai,.live]` and `com ai live` are the same list. Unknown names in
 `DOMAIN_VARIANTS` are dropped with a warning on stderr; `exact` is implicit and
-is ignored if listed. Integer keys fall back to their default on anything that
+is ignored if listed. `DOMAIN_RESULT_TTL_MS` turns on a result cache: a
+finished `available` or `taken` answer is stored under
+`DOMAIN_CACHE_DIR/results/` and reused until it is that many ms old
+(`unknown` is never stored), so a re-run skips the network; cached lines
+carry `"cached": true` in `--json`. Integer keys fall back to their default on anything that
 is not a positive integer.
 
 **Precedence**, lowest to highest:
@@ -176,6 +181,20 @@ console.log(results.filter((r) => r.status === "available").map((r) => r.domain)
 `loadConfig`, `generateVariants`, `normalizeName`, `rankCandidates`,
 `parseTldList`, `createChecker` and `checkAll` are all exported too. Zero runtime
 dependencies.
+
+To check single domains with the result cache on (another tool calling the
+checker many times, say), pass `results`:
+
+```ts
+import { createChecker } from "domainsweep";
+
+const checker = createChecker({
+  timeoutMs: 8000,
+  cacheDir: `${process.env.HOME}/.cache/domainsweep`,
+  results: { ttlMs: 24 * 3600 * 1000 }, // mode: "refresh" always re-checks, "only" never touches the network
+});
+const r = await checker.check("scryb.com"); // { status, method, detail, ms, cached? }
+```
 
 ## License
 

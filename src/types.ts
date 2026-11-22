@@ -24,7 +24,8 @@ export interface Candidate {
 }
 
 export type Availability = "available" | "taken" | "unknown";
-export type CheckMethod = "dns" | "rdap" | "whois";
+/** "cache" only appears on a result-cache miss in "only" mode. */
+export type CheckMethod = "dns" | "rdap" | "whois" | "cache";
 
 export interface CheckResult {
   domain: string;
@@ -34,6 +35,8 @@ export interface CheckResult {
   /** Free-text reason: "rdap 404", "whois: Domain not found.", "rdap 429 after 3 tries", ... */
   detail: string;
   ms: number;
+  /** True when served from the result cache instead of a live lookup. */
+  cached?: boolean;
 }
 
 export interface Config {
@@ -47,8 +50,10 @@ export interface Config {
   limit: number;
   concurrency: number;
   timeoutMs: number;
-  /** Directory for the IANA bootstrap + WHOIS referral caches. */
+  /** Directory for the IANA bootstrap + WHOIS referral caches (and results, when on). */
   cacheDir: string;
+  /** Max age of a cached check result in ms. 0 = result cache off. */
+  resultTtlMs: number;
 }
 
 export interface Checker {

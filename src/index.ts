@@ -45,7 +45,11 @@ export async function hunt(
   const variants = generateVariants(label, { variants: cfg.variants, maxVariants: cfg.maxVariants });
   const candidates = rankCandidates(variants, cfg.sortKey, { byTld, limit: cfg.limit });
 
-  const checker = createChecker({ timeoutMs: cfg.timeoutMs, cacheDir: cfg.cacheDir });
+  const checker = createChecker({
+      timeoutMs: cfg.timeoutMs,
+      cacheDir: cfg.cacheDir,
+      results: cfg.resultTtlMs > 0 ? { ttlMs: cfg.resultTtlMs } : undefined,
+    });
   const byDomain = new Map(candidates.map((c) => [c.domain, c]));
   const merged: Array<Candidate & CheckResult> = [];
 
