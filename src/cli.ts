@@ -7,7 +7,7 @@ import { generateVariants, normalizeName } from "./variants.ts";
 import { parseTldList, rankCandidates } from "./rank.ts";
 import { checkAll, createChecker } from "./check/index.ts";
 
-const VERSION = "0.1.1";
+const VERSION = "0.2.0";
 
 const USAGE = `domainsweep v${VERSION} — find free domain names
 
